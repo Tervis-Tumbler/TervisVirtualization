@@ -1,4 +1,4 @@
-﻿#Requires -Modules TervisEnvironments, TervisDHCP, TervisCluster
+﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster
 #Requires -Version 5
 
 function New-TervisVM {
@@ -48,7 +48,7 @@ function New-TervisVM {
     Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru |
     Add-ClusterVirtualMachineRole -Cluster $Cluster
 
-    Write-Verbose "$($ClusterNodeToHostVM.Name) $($VMOperatingSystemTemplate.Path) $($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
+    Write-Verbose "$($ClusterNodeToHostVM.Name) $($VMOperatingSystemTemplate.VHDFile.FullName) $($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
     
     Invoke-Command -ComputerName $ClusterNodeToHostVM.Name {
         param(
@@ -56,12 +56,16 @@ function New-TervisVM {
             $CSVToStoreVMOS,
             $VMName
         )
-        Copy-Item -Path $($VMOperatingSystemTemplate.Path) -Destination "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
+        Copy-Item -Path $($VMOperatingSystemTemplate.VHDFile.FullName) -Destination "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
     } -ArgumentList $VMOperatingSystemTemplate, $CSVToStoreVMOS, $VMName
 
-    $Path$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName
+    $PathOfVMVHDx = "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\$($VMOperatingSystemTemplate.VHDFile.Name)"
 
-    Add-VMHardDiskDrive -ComputerName $ClusterNodeToHostVM.Name -VMName $VMName -Path C:\ClusterStorage\Volume21\INF-MDT2013U2\2012R2Template.vhdx
+    Write-Verbose $PathOfVMVHDx
+
+    $VM | 
+    Add-VMHardDiskDrive -Path $PathOfVMVHDx -Passthru |
+    Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
 }
 
 function Remove-TervisVM {
@@ -113,17 +117,17 @@ function Get-TervisVMSwitch {
 
 $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     Name="Windows Server 2012 R2"
-    Path="C:\ClusterStorage\Volume16\2012 R2 Template\2012R2Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2012 R2 Template\2012R2Template.vhdx"
     Generation=2
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2012"
-    Path="C:\ClusterStorage\Volume8\2012 Template\2012 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume8\2012 Template\2012 Template.vhdx"
     Generation=2
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2008 R2"
-    Path="C:\ClusterStorage\Volume16\2008R2 Template\2008r2template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2008R2 Template\2008r2template.vhdx"
     Generation=1
 }
 
