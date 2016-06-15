@@ -1,4 +1,4 @@
-﻿#Requires -Modules TervisEnvironments
+﻿#Requires -Modules TervisEnvironments, TervisDHCP, TervisCluster
 #Requires -Version 5
 
 function New-TervisVM {
