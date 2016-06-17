@@ -13,7 +13,7 @@ function New-TervisVM {
         [String]$VMSizeName,
 
         [Parameter(Mandatory)]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory)]
@@ -29,7 +29,9 @@ function New-TervisVM {
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
 
-        [switch]$NeedsAccessToSAN
+        [switch]$NeedsAccessToSAN,
+
+        [switch]$NoVHD
     )
     $VMSize = Get-TervisVMSize -VMSizeName $VMSizeName
     $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
@@ -48,24 +50,28 @@ function New-TervisVM {
     Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru |
     Add-ClusterVirtualMachineRole -Cluster $Cluster
 
-    Write-Verbose "$($ClusterNodeToHostVM.Name) $($VMOperatingSystemTemplate.VHDFile.FullName) $($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
+    if ($NoVHD -eq $false ) {
+        Write-Verbose "$($ClusterNodeToHostVM.Name) $($VMOperatingSystemTemplate.VHDFile.FullName) $($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
     
-    Invoke-Command -ComputerName $ClusterNodeToHostVM.Name {
-        param(
-            $VMOperatingSystemTemplate,
-            $CSVToStoreVMOS,
-            $VMName
-        )
-        Copy-Item -Path $($VMOperatingSystemTemplate.VHDFile.FullName) -Destination "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
-    } -ArgumentList $VMOperatingSystemTemplate, $CSVToStoreVMOS, $VMName
+        Invoke-Command -ComputerName $ClusterNodeToHostVM.Name {
+            param(
+                $VMOperatingSystemTemplate,
+                $CSVToStoreVMOS,
+                $VMName
+            )
+            Copy-Item -Path $($VMOperatingSystemTemplate.VHDFile.FullName) -Destination "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName"
+        } -ArgumentList $VMOperatingSystemTemplate, $CSVToStoreVMOS, $VMName
 
-    $PathOfVMVHDx = "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\$($VMOperatingSystemTemplate.VHDFile.Name)"
+        $PathOfVMVHDx = "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\$($VMOperatingSystemTemplate.VHDFile.Name)"
 
-    Write-Verbose $PathOfVMVHDx
+        Write-Verbose $PathOfVMVHDx
+    
+        $VM = get-vm -ComputerName $ClusterNodeToHostVM.Name -Name $VMName
 
-    $VM | 
-    Add-VMHardDiskDrive -Path $PathOfVMVHDx -Passthru |
-    Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
+        $VM |
+        Add-VMHardDiskDrive -Path $PathOfVMVHDx -Passthru |
+        Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
+    }
 }
 
 function Remove-TervisVM {
@@ -129,11 +135,16 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     Name="Windows Server 2008 R2"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2008R2 Template\2008r2template.vhdx"
     Generation=1
+},
+[pscustomobject][ordered]@{
+    Name="PerfSonar"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\PerfSonar\PerfSonar.vhdx"
+    Generation=1
 }
 
 function Get-VMOperatingSystemTemplate {
     param(
-        [Parameter(Mandatory)][ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2")][String]$VMOperatingSystemTemplateName
+        [Parameter(Mandatory)][String]$VMOperatingSystemTemplateName
     )
     process {
         $VMOperatingSystemTemplate = $VMOperatingSystemTemplates | Where name -EQ $VMOperatingSystemTemplateName
