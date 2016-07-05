@@ -13,7 +13,7 @@ function New-TervisVM {
         [String]$VMSizeName,
 
         [Parameter(Mandatory)]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory)]
@@ -75,10 +75,11 @@ function New-TervisVM {
 }
 
 function Remove-TervisVM {
+    [CmdletBinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline)]$VM
     )
-    $VM | Remove-TervisDHCPForVM
+    $VM | Remove-TervisDHCPForVM -Verbose:($VerbosePreference -ne "SilentlyContinue")
     $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
     $VM | Remove-VM
 }
@@ -125,21 +126,31 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     Name="Windows Server 2012 R2"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2012 R2 Template\2012R2Template.vhdx"
     Generation=2
+    SecureBoot=$true
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2012"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume8\2012 Template\2012 Template.vhdx"
     Generation=2
+    SecureBoot=$true
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2008 R2"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2008R2 Template\2008r2template.vhdx"
     Generation=1
+    SecureBoot=$False
 },
 [pscustomobject][ordered]@{
     Name="PerfSonar"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\PerfSonar\PerfSonar.vhdx"
     Generation=1
+    SecureBoot=$False
+},
+[pscustomobject][ordered]@{
+    Name="CentOS 7"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\CentOS 7\CentOS 7.vhdx"
+    Generation=2
+    SecureBoot=$False
 }
 
 function Get-VMOperatingSystemTemplate {
