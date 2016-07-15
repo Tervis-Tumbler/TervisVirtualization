@@ -70,7 +70,7 @@ function New-TervisVM {
 
         $VM |
         Add-VMHardDiskDrive -Path $PathOfVMVHDx -Passthru |
-        Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
+        Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive) -ComputerName $($ClusterNodeToHostVM.Name)
     }
 }
 
