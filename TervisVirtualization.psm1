@@ -1,4 +1,4 @@
-﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster
+﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1} 
 #Requires -Version 5
 
 function New-TervisVM {
