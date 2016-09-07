@@ -241,6 +241,13 @@ function Add-VMCustomProperties {
         Get-TervisVMNetworkAdapter |
         Find-DHCPServerv4Lease
     }
+
+     $VM | Add-Member -MemberType ScriptProperty -Name IPAddress -Value {
+        $this.DhcpServerv4Lease | 
+        select -first 1 -Wait -ExpandProperty ipaddress | 
+        select -ExpandProperty IPAddressToString
+    }
+
     if ($PassThru) {$VM}
 }
 
