@@ -23,7 +23,7 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
         [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
@@ -60,7 +60,6 @@ function New-TervisVM {
         [Parameter(ParameterSetName = "NonClusteredNoVHD")]
         [switch]$NoVHD,
 
-        [Parameter(ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(ParameterSetName = "NonClusteredEmptyVHD")]
         [switch]$EmptyVHD
     )
@@ -126,6 +125,7 @@ function New-TervisClusterVM {
     $DHCPScope = Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
 
     Write-Verbose "$($VMSize.Name) $($VMOperatingSystemTemplate.Name) $VMName $($CSVToStoreVMOS.Name) $($ClusterNodeToHostVM.Name) $($VMSwitch.Name) $($DHCPScope.Name)"
+    $ComputerName = $ClusterNodeToHostVM.Name
 
     $VM = New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NoVHD -Generation $VMOperatingSystemTemplate.Generation `
         -ComputerName $ClusterNodeToHostVM.Name -Path $CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName -SwitchName $VMSwitch.Name |
@@ -178,7 +178,7 @@ function New-TervisNonClusterVM {
 
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
@@ -210,11 +210,18 @@ function New-TervisNonClusterVM {
 
     Write-Verbose "$($VMSize.Name) $($VMOperatingSystemTemplate.Name) $VMName $($VMSwitch.Name) $($DHCPScope.Name)"
 
-    $VM = New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NoVHD -Generation $VMOperatingSystemTemplate.Generation `
-        -ComputerName $ComputerName -SwitchName $VMSwitch.Name |
+    $VM = if ( -not $EmptyVHD ) {
+        New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NoVHD -Generation $VMOperatingSystemTemplate.Generation `
+            -ComputerName $ComputerName -SwitchName $VMSwitch.Name
+    } else {
+        New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NewVHDPath "$VMName.vhdx" -NewVHDSizeBytes 107374182400 -Generation $VMOperatingSystemTemplate.Generation `
+            -ComputerName $ComputerName -SwitchName $VMSwitch.Name
+    }
+
+    $VM |
     Set-VM -ProcessorCount $VMSize.CPUs -Passthru |
     Set-TervisVMNetworkAdapter -DHCPScope $DHCPScope -PassThru |
-    Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru
+    Set-TervisDHCPForVM -DHCPScope $DHCPScope
 
     if ($NoVHD -eq $false -and $EmptyVHD -eq $false) {
         Write-Verbose "$ComputerName $($VMOperatingSystemTemplate.VHDFile.FullName)"
@@ -230,8 +237,7 @@ function New-TervisNonClusterVM {
                 $PathToStoreVHDIn,
                 $VMName
             )
-            $Destination = "$PathToStoreVHDIn\$VMName"
-            New-Item -Path $Destination -ItemType Directory -Force | Out-Null
+            $Destination = "$PathToStoreVHDIn\$VMName$($VMOperatingSystemTemplate.VHDFile.FullName.Extension)"
             Copy-Item -Path "\\$($ClusterNodeToPullTemplateFrom.Name)\$($VMOperatingSystemTemplate.VHDFile.FullName -replace ":","`$")" -Destination $Destination
         }
 
@@ -243,8 +249,6 @@ function New-TervisNonClusterVM {
 
         $VM | Add-VMHardDiskDrive -Path $PathOfVMVHDx
         $VM | Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
-    } elseif ($EmptyVHD) {
-
     }
 
     get-vm -ComputerName $ComputerName -Name $VMName | 
@@ -363,6 +367,11 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\CentOS7\CentOS7.vhdx"
     Generation=2
     SecureBoot=$False
+},
+[pscustomobject][ordered]@{
+    Name="Windows 10"
+    Generation=2
+    SecureBoot=$true
 }
 
 function Get-VMOperatingSystemTemplate {
