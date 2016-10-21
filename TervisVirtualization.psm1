@@ -1,7 +1,61 @@
 ﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1} 
 #Requires -Version 5
+#Requires -RunAsAdministrator
 
 function New-TervisVM {
+    param(
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [ValidateLength(1,11)]
+        [ValidateScript({ Test-ShouldBeAlphaNumeric -Name VMNameWithoutEnvironmentPrefix -String $_ })]
+        [String]$VMNameWithoutEnvironmentPrefix,
+
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [ValidateSet(“Small”,”Medium”,"Large")]
+        [String]$VMSizeName,
+
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
+        [String]$VMOperatingSystemTemplateName,
+
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [ValidateSet(”Delta”,“Epsilon”,"Production","Infrastructure")]
+        [ValidateScript({$_ -in $(Get-TervisEnvironmentName) })]
+        [String]$EnvironmentName,
+
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [ValidateScript({ get-cluster -name $_ })]
+        [String]$Cluster,
+
+        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
+        [String]$DHCPScopeID,
+        
+        [Parameter(ParameterSetName = "Clustered")]
+        [Parameter(ParameterSetName = "NonClustered")]
+        [switch]$NeedsAccessToSAN,
+
+        [Parameter(ParameterSetName = "Clustered")]
+        [Parameter(ParameterSetName = "NonClustered")]
+        [switch]$NoVHD,
+
+        [Parameter(ParameterSetName = "NonClustered")]        
+        [String]$ComputerName
+    )
+
+    if ($ComputerName) {
+        New-TervisNonClusterVM @PSBoundParameters
+    } else {
+        New-TervisClusterVM @PSBoundParameters
+    }
+
+}
+
+function New-TervisClusterVM {
     param(
         [Parameter(Mandatory)]
         [ValidateLength(1,11)]
@@ -46,7 +100,7 @@ function New-TervisVM {
     $VM = New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NoVHD -Generation $VMOperatingSystemTemplate.Generation `
         -ComputerName $ClusterNodeToHostVM.Name -Path $CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName -SwitchName $VMSwitch.Name |
     Set-VM -ProcessorCount $VMSize.CPUs -Passthru |
-    Set-TervisVMNetworkAdapter -DHCPScope $DHCPScope -PassThru |
+    Set-TervisVMNetworkAdapter -DHCPScope $DHCPScope -UseVlanTagging -PassThru |
     Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru |
     Add-ClusterVirtualMachineRole -Cluster $Cluster
 
@@ -78,13 +132,126 @@ function New-TervisVM {
     get-vm -ComputerName $ClusterNodeToHostVM.Name -Name $VMName
 }
 
+function New-TervisNonClusterVM {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateLength(1,11)]
+        [ValidateScript({ Test-ShouldBeAlphaNumeric -Name VMNameWithoutEnvironmentPrefix -String $_ })]
+        [String]$VMNameWithoutEnvironmentPrefix,
+
+        [Parameter(Mandatory)]
+        [ValidateSet(“Small”,”Medium”,"Large")]
+        [String]$VMSizeName,
+
+        [Parameter(Mandatory)]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
+        [String]$VMOperatingSystemTemplateName,
+
+        [Parameter(Mandatory)]
+        [ValidateSet(”Delta”,“Epsilon”,"Production","Infrastructure")]
+        [ValidateScript({$_ -in $(Get-TervisEnvironmentName) })]
+        [String]$EnvironmentName,
+
+        [Parameter(Mandatory)]
+        [String]$ComputerName,
+
+        [Parameter(Mandatory)]
+        [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
+        [String]$DHCPScopeID,
+
+        [switch]$NeedsAccessToSAN,
+
+        [switch]$NoVHD
+    )
+    $VMSize = Get-TervisVMSize -VMSizeName $VMSizeName
+    $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
+    $VMName = Get-TervisVMName -VMNameWithoutEnvironmentPrefix $VMNameWithoutEnvironmentPrefix
+    $VMSwitch = Get-TervisVMSwitch -ComputerName $ComputerName
+    $DHCPScope = Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
+
+    Write-Verbose "$($VMSize.Name) $($VMOperatingSystemTemplate.Name) $VMName $($VMSwitch.Name) $($DHCPScope.Name)"
+
+    $VM = New-VM -Name $VMName -MemoryStartupBytes $VMSize.MemoryBytes -NoVHD -Generation $VMOperatingSystemTemplate.Generation `
+        -ComputerName $ComputerName -SwitchName $VMSwitch.Name |
+    Set-VM -ProcessorCount $VMSize.CPUs -Passthru |
+    Set-TervisVMNetworkAdapter -DHCPScope $DHCPScope -PassThru |
+    Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru
+
+    if ($NoVHD -eq $false) {
+        Write-Verbose "$ComputerName $($VMOperatingSystemTemplate.VHDFile.FullName)"
+        
+        $ClusterNodeToPullTemplateFrom = Get-TervisVMClusterNodeToPullTemplateFrom -ComputerName $ComputerName
+        $PathToStoreVHDIn = Get-VMHost -ComputerName $ComputerName | 
+            select -ExpandProperty VirtualHardDiskPath
+
+        Invoke-Command -ComputerName $ComputerName -ArgumentList $VMOperatingSystemTemplate, $ClusterNodeToPullTemplateFrom, $PathToStoreVHDIn, $VMName -ScriptBlock { 
+            param(
+                $VMOperatingSystemTemplate,
+                $ClusterNodeToPullTemplateFrom,
+                $PathToStoreVHDIn,
+                $VMName
+            )
+            $Destination = "$PathToStoreVHDIn\$VMName"
+            New-Item -Path $Destination -ItemType Directory -Force | Out-Null
+            Copy-Item -Path "\\$($ClusterNodeToPullTemplateFrom.Name)\$($VMOperatingSystemTemplate.VHDFile.FullName -replace ":","`$")" -Destination $Destination
+        }
+
+        $PathOfVMVHDx = "$PathToStoreVHDIn\$VMName\$($VMOperatingSystemTemplate.VHDFile.Name)"
+
+        Write-Verbose $PathOfVMVHDx
+    
+        $VM = get-vm -ComputerName $ComputerName -Name $VMName
+
+        $VM | Add-VMHardDiskDrive -Path $PathOfVMVHDx
+        $VM | Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
+    }
+
+    get-vm -ComputerName $ComputerName -Name $VMName | 
+    Set-VMFirmware -EnableSecureBoot:$(if($VMOperatingSystemTemplateName.SecureBoot){"On"}else{"Off"})
+
+    get-vm -ComputerName $ComputerName -Name $VMName
+}
+
+function Get-TervisVMClusterNodeToPullTemplateFrom {
+    param (
+        [Parameter(Mandatory)]$ComputerName
+    )
+    $Domain = Get-ADDomain |
+        select -ExpandProperty forest
+    $ADSiteOfHyperVHost = Get-ComputerSite -ComputerName $ComputerName
+    $ClusterWithTemplates = Get-TervisCluster -Domain $Domain |
+        where ADSite -EQ $ADSiteOfHyperVHost |
+        select -First 1 -Wait
+    $ClusterNodeToPullTemplateFrom = $ClusterWithTemplates |
+        Get-ClusterNode | 
+        where state -EQ "Up" | 
+        select -First 1 -Wait
+    
+    $ClusterNodeToPullTemplateFrom
+}
+
 function Remove-TervisVM {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory, ValueFromPipeline)]$VM
+        [parameter(Mandatory, ValueFromPipeline)]$VM,
+        [Switch]$DeleteVHDs
     )
     $VM | Remove-TervisDHCPForVM -Verbose:($VerbosePreference -ne "SilentlyContinue")
-    $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
+    
+    if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
+        $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
+    }
+
+    if ($DeleteVHDs) {
+        Invoke-Command -ComputerName $VM.ComputerName -ArgumentList $($VM | Get-VMHardDiskDrive) -ScriptBlock {
+            param (
+                $VMHardDiskDrive
+            ) 
+            $VMHardDiskDrive | Remove-Item -Confirm
+        }
+    }
+
     $VM | Remove-VM
 }
 
@@ -92,16 +259,17 @@ function Set-TervisVMNetworkAdapter {
     param(
         [parameter(Mandatory, ValueFromPipeline)]$VM,
         [Parameter(Mandatory)]$DHCPScope,
+        [Switch]$UseVlanTagging,
         [switch]$PassThru
     )
-    $VM | Set-VMNetworkAdapterVlan -VlanId $DHCPScope.VLan -Access
+    if ($UseVlanTagging) { $VM | Set-VMNetworkAdapterVlan -VlanId $DHCPScope.VLan -Access }
     $VM | Start-VM -Passthru | Stop-VM -Force -Passthru
     
     $VMMacAddress = $VM | Get-VMNetworkAdapter | select -ExpandProperty macaddress
 
     $VM | Set-VMNetworkAdapter -StaticMacAddress $VMMacAddress
     
-    if($PassThru) {$VM}
+    if ($PassThru) {$VM}
 }
 
 function Get-TervisVMNetworkAdapter {
