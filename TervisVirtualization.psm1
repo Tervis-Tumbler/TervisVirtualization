@@ -4,47 +4,65 @@
 
 function New-TervisVM {
     param(
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
-        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateLength(1,11)]
         [ValidateScript({ Test-ShouldBeAlphaNumeric -Name VMNameWithoutEnvironmentPrefix -String $_ })]
         [String]$VMNameWithoutEnvironmentPrefix,
 
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
-        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateSet(“Small”,”Medium”,"Large")]
         [String]$VMSizeName,
 
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
-        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
         [String]$VMOperatingSystemTemplateName,
 
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
-        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateSet(”Delta”,“Epsilon”,"Production","Infrastructure")]
         [ValidateScript({$_ -in $(Get-TervisEnvironmentName) })]
         [String]$EnvironmentName,
 
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [ValidateScript({ get-cluster -name $_ })]
         [String]$Cluster,
 
-        [Parameter(Mandatory, ParameterSetName = "Clustered")]
-        [Parameter(Mandatory, ParameterSetName = "NonClustered")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
+        [String]$ComputerName,
+
+        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
         
-        [Parameter(ParameterSetName = "Clustered")]
-        [Parameter(ParameterSetName = "NonClustered")]
+        [Parameter(ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(ParameterSetName = "NonClusteredEmptyVHD")]
         [switch]$NeedsAccessToSAN,
 
-        [Parameter(ParameterSetName = "Clustered")]
-        [Parameter(ParameterSetName = "NonClustered")]
+        [Parameter(ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(ParameterSetName = "NonClusteredNoVHD")]
         [switch]$NoVHD,
 
-        [Parameter(ParameterSetName = "NonClustered")]        
-        [String]$ComputerName
+        [Parameter(ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(ParameterSetName = "NonClusteredEmptyVHD")]
+        [switch]$EmptyVHD
     )
 
     if ($ComputerName) {
@@ -57,35 +75,47 @@ function New-TervisVM {
 
 function New-TervisClusterVM {
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateLength(1,11)]
         [ValidateScript({ Test-ShouldBeAlphaNumeric -Name VMNameWithoutEnvironmentPrefix -String $_ })]
         [String]$VMNameWithoutEnvironmentPrefix,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(“Small”,”Medium”,"Large")]
         [String]$VMSizeName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
         [String]$VMOperatingSystemTemplateName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(”Delta”,“Epsilon”,"Production","Infrastructure")]
         [ValidateScript({$_ -in $(Get-TervisEnvironmentName) })]
         [String]$EnvironmentName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateScript({ get-cluster -name $_ })]
         [String]$Cluster,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
 
+        [Parameter(ParameterSetName = "NoVHD")]
+        [Parameter(ParameterSetName = "EmptyVHD")]
         [switch]$NeedsAccessToSAN,
 
-        [switch]$NoVHD
+        [Parameter(ParameterSetName = "NoVHD")]
+        [switch]$NoVHD,
+
+        [Parameter(ParameterSetName = "EmptyVHD")]
+        [switch]$EmptyVHD
     )
     $VMSize = Get-TervisVMSize -VMSizeName $VMSizeName
     $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
@@ -135,34 +165,42 @@ function New-TervisClusterVM {
 function New-TervisNonClusterVM {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateLength(1,11)]
         [ValidateScript({ Test-ShouldBeAlphaNumeric -Name VMNameWithoutEnvironmentPrefix -String $_ })]
         [String]$VMNameWithoutEnvironmentPrefix,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(“Small”,”Medium”,"Large")]
         [String]$VMSizeName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7")]
         [String]$VMOperatingSystemTemplateName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateSet(”Delta”,“Epsilon”,"Production","Infrastructure")]
         [ValidateScript({$_ -in $(Get-TervisEnvironmentName) })]
         [String]$EnvironmentName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [String]$ComputerName,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
+        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
 
-        [switch]$NeedsAccessToSAN,
+        [Parameter(ParameterSetName = "NoVHD")]
+        [switch]$NoVHD,
 
-        [switch]$NoVHD
+        [Parameter(ParameterSetName = "EmptyVHD")]
+        [switch]$EmptyVHD
     )
     $VMSize = Get-TervisVMSize -VMSizeName $VMSizeName
     $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
@@ -178,7 +216,7 @@ function New-TervisNonClusterVM {
     Set-TervisVMNetworkAdapter -DHCPScope $DHCPScope -PassThru |
     Set-TervisDHCPForVM -DHCPScope $DHCPScope -PassThru
 
-    if ($NoVHD -eq $false) {
+    if ($NoVHD -eq $false -and $EmptyVHD -eq $false) {
         Write-Verbose "$ComputerName $($VMOperatingSystemTemplate.VHDFile.FullName)"
         
         $ClusterNodeToPullTemplateFrom = Get-TervisVMClusterNodeToPullTemplateFrom -ComputerName $ComputerName
@@ -205,6 +243,8 @@ function New-TervisNonClusterVM {
 
         $VM | Add-VMHardDiskDrive -Path $PathOfVMVHDx
         $VM | Set-VMFirmware -BootOrder $($vm | Get-VMHardDiskDrive)
+    } elseif ($EmptyVHD) {
+
     }
 
     get-vm -ComputerName $ComputerName -Name $VMName | 
