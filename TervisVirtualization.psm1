@@ -1,4 +1,4 @@
-﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1} 
+﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell
 #Requires -Version 5
 #Requires -RunAsAdministrator
 
@@ -382,17 +382,6 @@ function Get-VMOperatingSystemTemplate {
         $VMOperatingSystemTemplate = $VMOperatingSystemTemplates | Where name -EQ $VMOperatingSystemTemplateName
         $VMOperatingSystemTemplate
     }
-}
-
-function Test-ShouldBeAlphaNumeric {
-    param(
-        $Name, 
-        $string
-    )
-    if ($string -notmatch "^[a-zA-Z0-9]+$") { 
-        throw "The $name should only contain alphanumeric characters." 
-    }
-    $true
 }
 
 Function Get-TervisVMName {
