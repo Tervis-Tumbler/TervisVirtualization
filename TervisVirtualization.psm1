@@ -1,4 +1,4 @@
-﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell
+﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell, TervisNetTCPIP
 #Requires -Version 5
 #Requires -RunAsAdministrator
 
@@ -597,4 +597,32 @@ param (
 	$Properties | Add-Member Noteproperty VMOSVersion $VMOSVersion
 	$Properties | Add-Member Noteproperty VMHostname $VMHostname
 	Write-Output $Properties
+}
+
+function Start-TervisVMAndWaitForPort {
+    Param (
+        [Parameter(Mandatory)]
+        $PortNumbertoMonitor,
+        
+        [Parameter(Mandatory, ValueFromPipeline)]
+        $TervisVMObject
+    )
+
+    Start-VM -ComputerName $TervisVMObject.ComputerName -Name $TervisVMObject.Name
+    Wait-ForPortAvailable -IPAddress $TervisVMObject.IPAddress -PortNumbertoMonitor $PortNumbertoMonitor
+}
+
+function Restart-TervisVMAndWaitForPort {
+    Param(
+        [Parameter(Mandatory)]
+        $PortNumbertoMonitor,
+        
+        [Parameter(Mandatory, ValueFromPipeline)]
+        $TervisVMObject
+    )
+    
+    Restart-VM -ComputerName $TervisVMObject.ComputerName -Name $TervisVMObject.Name -force
+
+    Wait-ForPortNotAvailable -IPAddress $TervisVMObject.IPAddress -PortNumbertoMonitor $PortNumbertoMonitor
+    Wait-ForPortAvailable -IPAddress $TervisVMObject.IPAddress -PortNumbertoMonitor $PortNumbertoMonitor
 }
