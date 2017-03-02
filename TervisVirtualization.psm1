@@ -1,6 +1,5 @@
-﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell, TervisNetTCPIP
+﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell, TervisNetTCPIP, Get-SPN
 #Requires -Version 5
-#Requires -RunAsAdministrator
 
 function New-TervisVM {
     param(
@@ -625,4 +624,26 @@ function Restart-TervisVMAndWaitForPort {
 
     Wait-ForPortNotAvailable -IPAddress $TervisVMObject.IPAddress -PortNumbertoMonitor $PortNumbertoMonitor
     Wait-ForPortAvailable -IPAddress $TervisVMObject.IPAddress -PortNumbertoMonitor $PortNumbertoMonitor
+}
+
+
+function Find-TervisVM {
+    param (
+        $Name
+    )
+    $HyperVHosts = Find-HyperVHosts
+
+    Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
+        param($HyperVHost, $Name)
+        Invoke-Command -ComputerName $HyperVHost -ArgumentList $Name -ScriptBlock { 
+            param ($Name)
+            get-vm -Name $Name
+        }
+    }
+}
+
+function Find-HyperVHosts {
+    Get-SPN -ServiceClass "Microsoft Virtual Console Service" |
+    Select-Object -ExpandProperty ComputerName | 
+    Sort-Object -Unique
 }
