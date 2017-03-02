@@ -628,15 +628,16 @@ function Restart-TervisVMAndWaitForPort {
 
 
 function Find-TervisVM {
+    [CmdletBinding()]
     param (
-        $Name
+        [String[]]$Name
     )
     $HyperVHosts = Find-HyperVHosts
 
     Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
-        param($HyperVHost, $Name)
-        Invoke-Command -ComputerName $HyperVHost -ArgumentList $Name -ScriptBlock { 
-            param ($Name)
+        param($HyperVHost, [String[]]$Name)
+        Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$Name) -ScriptBlock { 
+            param ([String[]]$Name)
             get-vm -Name $Name
         }
     }
