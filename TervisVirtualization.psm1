@@ -632,7 +632,7 @@ function Find-TervisVM {
     param (
         [String[]]$Name
     )
-    $HyperVHosts = Find-HyperVHosts
+    $HyperVHosts = Get-HyperVHosts
 
     Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
         param($HyperVHost, [String[]]$Name)
@@ -648,7 +648,7 @@ function Find-TervisVM {
     }
 }
 
-function Find-HyperVHosts {
+function Get-HyperVHosts {
     Get-SPN -ServiceClass "Microsoft Virtual Console Service" |
     Select-Object -ExpandProperty ComputerName | 
     Sort-Object -Unique
