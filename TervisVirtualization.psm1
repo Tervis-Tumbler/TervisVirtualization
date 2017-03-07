@@ -180,6 +180,10 @@ function New-TervisClusterVM {
     get-vm -ComputerName $ClusterNodeToHostVM.Name -Name $VMName | 
     Set-VMFirmware -EnableSecureBoot:$(if($VMOperatingSystemTemplateName.SecureBoot){"On"}else{"Off"})
 
+    if ($NeedsAccessToSAN){
+        Add-TervisFibreChannelFabrictoVM -VMName $VMName -Computername $ComputerName -Cluster $Cluster
+    }
+
     get-vm -ComputerName $ClusterNodeToHostVM.Name -Name $VMName
 }
 
@@ -652,4 +656,42 @@ function Get-HyperVHosts {
     Get-SPN -ServiceClass "Microsoft Virtual Console Service" |
     Select-Object -ExpandProperty ComputerName | 
     Sort-Object -Unique
+}
+
+$TervisVMFibreChannelFabric = [pscustomobject][ordered]@{
+    Cluster = "HypervCluster5"
+    FabricA = "FabricA"
+    FabricB = "FabricB"
+},
+[pscustomobject][ordered]@{
+    Cluster = "HypervCluster6"
+    FabricA = "FabricA"
+    FabricB = "FabricB"
+}
+
+function Get-TervisVMFibreChannelFabric {
+    param ( 
+        [Parameter(Mandatory)]
+        [ValidateSet(“HypervCluster5","HypervCluster6")]
+        $Cluster
+    )
+        $TervisVMFibreChannelFabric | Where Cluster -eq $Cluster
+}
+
+function Add-TervisFibreChannelFabrictoVM {
+    param (
+        [Parameter(Mandatory)] 
+        [String] $VMName,
+
+        [Parameter(Mandatory)] 
+        [String] $Computername,
+
+        [ValidateScript({ get-cluster -name $_ })]
+        [Parameter(Mandatory)]
+        [String] $Cluster
+         
+    )
+    $ClusterFabric = Get-TervisVMFibreChannelFabric -Cluster $Cluster
+        Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricA
+        Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricB
 }
