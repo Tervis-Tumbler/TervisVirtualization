@@ -669,6 +669,50 @@ function Find-TervisVMByIP {
     }
 }
 
+function Find-TervisVMVLANID {
+    [CmdletBinding()]
+    param (
+        [String[]]$VLANID
+    )
+    $HyperVHosts = Get-HyperVHosts
+
+    Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $VLANID -ScriptBlock {
+        param($HyperVHost, [String[]]$VLANID)
+        Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$VLANID) -ScriptBlock { 
+            param ([String[]]$VLANID)
+            Get-VMNetworkAdapter -VMName * |
+            where {$_.VlanSetting.AccessVlanID -eq $VLANID} | 
+            select -ExpandProperty vmname |
+            get-vm | 
+            foreach {
+                $_ | Add-Member -Name VMNetworkAdapter -MemberType NoteProperty -PassThru -Value $( 
+                    $_ | Get-VMNetworkAdapter
+                )
+            }
+        }
+    }
+}
+
+function Find-TervisVMUntaggedVlan {
+    [CmdletBinding()]
+    $HyperVHosts = Get-HyperVHosts
+
+    Start-ParallelWork -Parameters $HyperVHosts -ScriptBlock {
+        param($HyperVHost)
+        Invoke-Command -ComputerName $HyperVHost -ScriptBlock { 
+            Get-VMNetworkAdapter -VMName * |
+            where {$_.VlanSetting.OperationMode -eq "Untagged"} | 
+            select -ExpandProperty vmname |
+            get-vm | 
+            foreach {
+                $_ | Add-Member -Name VMNetworkAdapter -MemberType NoteProperty -PassThru -Value $( 
+                    $_ | Get-VMNetworkAdapter
+                )
+            }
+        }
+    }
+}
+
 function Find-TervisVMByMACAddress {
     [CmdletBinding()]
     param (
