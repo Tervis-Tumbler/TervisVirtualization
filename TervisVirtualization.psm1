@@ -652,6 +652,23 @@ function Find-TervisVM {
     }
 }
 
+function Find-TervisVMByIP {
+    [CmdletBinding()]
+    param (
+        [String[]]$VMIPAddress
+    )
+    $HyperVHosts = Get-HyperVHosts
+
+    Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $VMIPAddress -ScriptBlock {
+        param($HyperVHost, [String[]]$VMIPAddress)
+        Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$VMIPAddress) -ScriptBlock { 
+            param ([String[]]$VMIPAddress)
+            Get-VMNetworkAdapter -VMName * |
+            where {$_.IPAddresses -eq $VMIPAddress}
+        }
+    }
+}
+
 function Get-HyperVHosts {
     Get-SPN -ServiceClass "Microsoft Virtual Console Service" |
     Select-Object -ExpandProperty ComputerName | 
