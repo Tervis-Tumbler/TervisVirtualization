@@ -52,12 +52,12 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
         [String]$ComputerName,
 
-        [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
-        [Parameter(Mandatory, ParameterSetName = "NonClusteredTemplatedVHD")]
-        [Parameter(Mandatory, ParameterSetName = "ClusteredNoVHD")]
-        [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
-        [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
-        [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
+        [Parameter(ParameterSetName = "ClusteredTemplatedVHD")]
+        [Parameter(ParameterSetName = "NonClusteredTemplatedVHD")]
+        [Parameter(ParameterSetName = "ClusteredNoVHD")]
+        [Parameter(ParameterSetName = "NonClusteredNoVHD")]
+        [Parameter(ParameterSetName = "ClusteredEmptyVHD")]
+        [Parameter(ParameterSetName = "NonClusteredEmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
         
@@ -120,9 +120,9 @@ function New-TervisClusterVM {
         [ValidateScript({ get-cluster -name $_ })]
         [String]$Cluster,
 
-        [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
-        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
-        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
+        [Parameter(ParameterSetName = "TemplatedVHD")]
+        [Parameter(ParameterSetName = "NoVHD")]
+        [Parameter(ParameterSetName = "EmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
         
@@ -143,7 +143,11 @@ function New-TervisClusterVM {
     $CSVToStoreVMOS = Get-TervisClusterSharedVolumeToStoreVMOSOn -Cluster $Cluster
     $ClusterNodeToHostVM = Get-TervisClusterNodeToHostVM -VMSize $VMSize -Cluster $Cluster
     $VMSwitch = Get-TervisVMSwitch -ComputerName $ClusterNodeToHostVM.Name
-    $DHCPScope = Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
+    $DHCPScope = if ($DHCPScopeID) { 
+        Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
+    } else {
+        Get-TervisDhcpServerv4Scope -Environment $EnvironmentName
+    }
 
     Write-Verbose "$($VMSize.Name) $($VMOperatingSystemTemplate.Name) $VMName $($CSVToStoreVMOS.Name) $($ClusterNodeToHostVM.Name) $($VMSwitch.Name) $($DHCPScope.Name)"
     $ComputerName = $ClusterNodeToHostVM.Name
@@ -221,9 +225,9 @@ function New-TervisNonClusterVM {
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
         [String]$ComputerName,
         
-        [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
-        [Parameter(Mandatory, ParameterSetName = "NoVHD")]
-        [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
+        [Parameter(ParameterSetName = "TemplatedVHD")]
+        [Parameter(ParameterSetName = "NoVHD")]
+        [Parameter(ParameterSetName = "EmptyVHD")]
         [ValidateScript({ Get-DhcpServerv4Scope -ScopeId $_ -ComputerName $(Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName) })]
         [String]$DHCPScopeID,
 
@@ -237,7 +241,11 @@ function New-TervisNonClusterVM {
     $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
     $VMName = Get-TervisVMName -VMNameWithoutEnvironmentPrefix $VMNameWithoutEnvironmentPrefix
     $VMSwitch = Get-TervisVMSwitch -ComputerName $ComputerName
-    $DHCPScope = Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
+    $DHCPScope = if ($DHCPScopeID) { 
+        Get-TervisDhcpServerv4Scope -ScopeID $DHCPScopeID
+    } else {
+        Get-TervisDhcpServerv4Scope -Environment $EnvironmentName
+    }
 
     Write-Verbose "$($VMSize.Name) $($VMOperatingSystemTemplate.Name) $VMName $($VMSwitch.Name) $($DHCPScope.Name)"
 
