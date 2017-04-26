@@ -321,7 +321,7 @@ function Remove-TervisVM {
         [Switch]$DeleteVHDs
     )
     $VM | Remove-TervisDHCPForVM -Verbose:($VerbosePreference -ne "SilentlyContinue")
-    
+    $VM | Remove-TervisDNSRecordsforVM
     if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
         $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
     }
@@ -788,3 +788,5 @@ function Add-TervisFibreChannelFabrictoVM {
         Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricA
         Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricB
 }
+
+
