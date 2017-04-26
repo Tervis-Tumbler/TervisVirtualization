@@ -737,10 +737,21 @@ function Find-TervisVMByMACAddress {
         }
     }
 }
+
 function Get-HyperVHosts {
-    Get-SPN -ServiceClass "Microsoft Virtual Console Service" |
-    Select-Object -ExpandProperty ComputerName | 
-    Sort-Object -Unique
+    $ComputerswithHyperVServices = Get-ADObject -Filter 'ObjectClass -eq "serviceConnectionPoint" -and Name -eq "Microsoft Hyper-V"' -ErrorAction Stop
+        foreach($Computer in $ComputerswithHyperVServices) {            
+            $ComputerObjectPath = $Computer.DistinguishedName.split(",")
+            $ComputerObjectPath = $ComputerObjectPath[1..$ComputerObjectPath.Count] -join "," 
+            $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
+            if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
+                get-adcomputer -Identity $ComputerObjectPath | select -ExpandProperty Name
+#                $ComputerObject = get-adcomputer -Identity $ComputerObjectPath
+#                [PSCustomObject][Ordered] @{
+#                    Computername = $ComputerObject.Name
+#                }
+            }
+        }
 }
 
 $TervisVMFibreChannelFabric = [pscustomobject][ordered]@{
