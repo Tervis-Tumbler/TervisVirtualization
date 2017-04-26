@@ -322,6 +322,8 @@ function Remove-TervisVM {
     )
     $VM | Remove-TervisDHCPForVM -Verbose:($VerbosePreference -ne "SilentlyContinue")
     $VM | Remove-TervisDNSRecordsforVM
+    $VM | Remove-TervisADComputerObjectforVM
+
     if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
         $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
     }
