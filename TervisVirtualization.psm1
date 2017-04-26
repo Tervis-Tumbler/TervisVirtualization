@@ -740,18 +740,15 @@ function Find-TervisVMByMACAddress {
 
 function Get-HyperVHosts {
     $ComputerswithHyperVServices = Get-ADObject -Filter 'ObjectClass -eq "serviceConnectionPoint" -and Name -eq "Microsoft Hyper-V"' -ErrorAction Stop
-        foreach($Computer in $ComputerswithHyperVServices) {            
-            $ComputerObjectPath = $Computer.DistinguishedName.split(",")
-            $ComputerObjectPath = $ComputerObjectPath[1..$ComputerObjectPath.Count] -join "," 
-            $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
-            if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
-                get-adcomputer -Identity $ComputerObjectPath | select -ExpandProperty Name
-#                $ComputerObject = get-adcomputer -Identity $ComputerObjectPath
-#                [PSCustomObject][Ordered] @{
-#                    Computername = $ComputerObject.Name
-#                }
-            }
+    foreach($Computer in $ComputerswithHyperVServices) {            
+#        $ComputerObjectPathArray = $Computer.DistinguishedName.split(",")
+#        $ComputerObjectPath = $ComputerObjectPath[1..$ComputerObjectPathArray.Count] -join "," 
+        $ComputerObjectPath = ($Computer.DistinguishedName.split(",") | select -skip 1 ) -join ","
+        $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
+        if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
+            get-adcomputer -Identity $ComputerObjectPath | select -ExpandProperty Name
         }
+    }
 }
 
 $TervisVMFibreChannelFabric = [pscustomobject][ordered]@{
