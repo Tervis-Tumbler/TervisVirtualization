@@ -331,14 +331,14 @@ function Remove-TervisVM {
 
         if ($DeleteVHDs) {
             Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
-                $Using:VM | 
+                $Using:VM.Name | 
                 Get-VMHardDiskDrive | 
                 Remove-Item -Confirm
             }
         }
 
         Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
-            $Using:VM | Remove-VM
+            $Using:VM.Name | Remove-VM
         }        
     }
 }
