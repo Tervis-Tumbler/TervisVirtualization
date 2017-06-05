@@ -320,26 +320,26 @@ function Remove-TervisVM {
         [parameter(Mandatory, ValueFromPipeline)]$VM,
         [Switch]$DeleteVHDs
     )
-    process {
-       
+    process {       
         Remove-TervisDHCPLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
         Remove-TervisDNSRecord -ComputerName $VM.Name
-        $VM | Remove-TervisADComputerObjectforVM
+        Remove-TervisADComputerObject -ComputerName $VM.Name
 
         if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
             $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
         }
 
         if ($DeleteVHDs) {
-            Invoke-Command -ComputerName $VM.ComputerName -ArgumentList $($VM | Get-VMHardDiskDrive) -ScriptBlock {
-                param (
-                    $VMHardDiskDrive
-                ) 
-                $VMHardDiskDrive | Remove-Item -Confirm
+            Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
+                $Using:VM | 
+                Get-VMHardDiskDrive | 
+                Remove-Item -Confirm
             }
         }
 
-        $VM | Remove-VM
+        Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
+            $Using:VM | Remove-VM
+        }        
     }
 }
 
