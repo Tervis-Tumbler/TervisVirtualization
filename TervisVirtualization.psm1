@@ -320,24 +320,27 @@ function Remove-TervisVM {
         [parameter(Mandatory, ValueFromPipeline)]$VM,
         [Switch]$DeleteVHDs
     )
-    $VM | Remove-TervisDHCPForVM -Verbose:($VerbosePreference -ne "SilentlyContinue")
-    $VM | Remove-TervisDNSRecordsforVM
-    $VM | Remove-TervisADComputerObjectforVM
+    process {
+       
+        Remove-TervisDHCPLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
+        $VM | Remove-TervisDNSRecordsforVM
+        $VM | Remove-TervisADComputerObjectforVM
 
-    if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
-        $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
-    }
-
-    if ($DeleteVHDs) {
-        Invoke-Command -ComputerName $VM.ComputerName -ArgumentList $($VM | Get-VMHardDiskDrive) -ScriptBlock {
-            param (
-                $VMHardDiskDrive
-            ) 
-            $VMHardDiskDrive | Remove-Item -Confirm
+        if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
+            $VM | Remove-ClusterGroup -RemoveResources -Cluster $Vm.ComputerName
         }
-    }
 
-    $VM | Remove-VM
+        if ($DeleteVHDs) {
+            Invoke-Command -ComputerName $VM.ComputerName -ArgumentList $($VM | Get-VMHardDiskDrive) -ScriptBlock {
+                param (
+                    $VMHardDiskDrive
+                ) 
+                $VMHardDiskDrive | Remove-Item -Confirm
+            }
+        }
+
+        $VM | Remove-VM
+    }
 }
 
 function Set-TervisVMNetworkAdapter {
@@ -363,12 +366,12 @@ function Get-TervisVMNetworkAdapter {
     )
     process {
         $VMNetworkAdapter = $VM | Get-VMNetworkAdapter
-        $VMNetworkAdapter | Mixin-VMNetworkAdapter
+        $VMNetworkAdapter | Add-VMNetworkAdapterCustomProperties
         $VMNetworkAdapter
     }   
 }
 
-filter Mixin-VMNetworkAdapter {
+filter Add-VMNetworkAdapterCustomProperties {
     $_ | Add-Member -MemberType ScriptProperty -Name MacAddressWithDashes -Value { ($This.macaddress -replace '(..)','$1-').Trim('-') }
 }
 
@@ -648,7 +651,7 @@ function Find-TervisVM {
     )
     $HyperVHosts = Get-HyperVHosts
 
-    Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
+    $VM = Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
         param($HyperVHost, [String[]]$Name)
         Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$Name) -ScriptBlock { 
             param ([String[]]$Name)
@@ -660,6 +663,9 @@ function Find-TervisVM {
             }
         }
     }
+    $VM.VMNetworkAdapter | Add-VMNetworkAdapterCustomProperties
+    $VM | Add-VMCustomProperties
+    $VM
 }
 
 function Find-TervisVMByIP {
