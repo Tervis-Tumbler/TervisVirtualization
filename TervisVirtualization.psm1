@@ -321,7 +321,7 @@ function Remove-TervisVM {
         [Switch]$DeleteVHDs
     )
     process {       
-        Remove-TervisDHCPLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
+        Remove-TervisDHCPReservationAndLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
         Remove-TervisDNSRecord -ComputerName $VM.Name
         Remove-TervisADComputerObject -ComputerName $VM.Name
 
