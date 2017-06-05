@@ -323,7 +323,7 @@ function Remove-TervisVM {
     process {
        
         Remove-TervisDHCPLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
-        $VM | Remove-TervisDNSRecordsforVM
+        Remove-TervisDNSRecord -ComputerName $VM.Name
         $VM | Remove-TervisADComputerObjectforVM
 
         if (Get-Cluster -Name $Vm.ComputerName -ErrorAction SilentlyContinue) {
