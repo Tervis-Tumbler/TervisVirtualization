@@ -671,9 +671,12 @@ function Find-TervisVM {
             }            
         }
     }
-    $VM.VMNetworkAdapter | Add-VMNetworkAdapterCustomProperties
-    $VM | Add-VMCustomProperties
-    $VM
+
+    if ($VM) {
+        $VM.VMNetworkAdapter | Add-VMNetworkAdapterCustomProperties
+        $VM | Add-VMCustomProperties
+        $VM
+    }
 }
 
 function Find-TervisVMByIP {
