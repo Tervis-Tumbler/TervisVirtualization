@@ -320,7 +320,11 @@ function Remove-TervisVM {
         [parameter(Mandatory, ValueFromPipeline)]$VM,
         [Switch]$DeleteVHDs
     )
-    process {       
+    process {
+        Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
+            $Using:VM.Name | Stop-VM -Force -TurnOff
+        }
+
         Remove-TervisDHCPReservationAndLease -MacAddressWithDashes $VM.VMNetworkAdapter.MacAddressWithDashes
         Remove-TervisDNSRecord -ComputerName $VM.Name
         Remove-TervisADComputerObject -ComputerName $VM.Name
