@@ -659,12 +659,16 @@ function Find-TervisVM {
         param($HyperVHost, [String[]]$Name)
         Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$Name) -ScriptBlock { 
             param ([String[]]$Name)
-            get-vm -Name $Name -ErrorAction SilentlyContinue | 
-            foreach {
-                $_ | Add-Member -Name VMNetworkAdapter -MemberType NoteProperty -PassThru -Value $( 
-                    $_ | Get-VMNetworkAdapter
-                )
-            }
+            $VM = get-vm -Name $Name -ErrorAction SilentlyContinue
+
+            if ($VM) {
+                $VM |
+                foreach {
+                    $_ | Add-Member -Name VMNetworkAdapter -MemberType NoteProperty -PassThru -Value $( 
+                        $_ | Get-VMNetworkAdapter
+                    )
+                }
+            }            
         }
     }
     $VM.VMNetworkAdapter | Add-VMNetworkAdapterCustomProperties
