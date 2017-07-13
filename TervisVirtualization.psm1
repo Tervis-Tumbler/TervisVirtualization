@@ -463,13 +463,13 @@ $VMSizes = [pscustomobject][ordered]@{
     CPUs=4
 }
 
-filter Mixin-VMSizes {
+filter Add-VMSizesCustomProperties {
     $_ | Add-Member -MemberType ScriptProperty -Name MemoryGiB -Value { $this.MemoryMiB/1024 }
     $_ | Add-Member -MemberType ScriptProperty -Name MemoryKiB -Value { $this.MemoryMiB*1024 }
     $_ | Add-Member -MemberType ScriptProperty -Name MemoryBytes -Value { $this.MemoryKiB*1024 }
 }
 
-$VMSizes | Mixin-VMSizes
+$VMSizes | Add-VMSizesCustomProperties
 
 function Get-TervisVMSize {
     param(
@@ -808,4 +808,29 @@ function Add-TervisFibreChannelFabrictoVM {
         Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricB
 }
 
+function Move-TervisVMStorage {
+    param (
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)] 
+        [String] $VMName,
 
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)] 
+        [String] $Computername,
+
+        [Parameter(Mandatory)] $VolumeNumber
+    )
+    process {
+        $DestinationPathLocal = "C:\ClusterStorage\Volume$VolumeNumber\$VMName"
+        $DestinationPathRemote = $DestinationPathLocal | ConvertTo-RemotePath -ComputerName $Computername
+    
+        New-Item -ItemType Directory -Path $DestinationPathRemote -Force -ErrorAction SilentlyContinue | Out-Null
+
+        if (-not (Test-Path -Path $DestinationPathRemote)) {
+            Throw "$DestinationPathRemote doesn't exist and failed to be created"
+        }
+
+        Invoke-Command -ComputerName $Computername -ScriptBlock {
+            Get-VM -Name $Using:VMName |
+            Move-VMStorage -DestinationStoragePath $Using:DestinationPathLocal
+        }
+    }
+}
