@@ -839,7 +839,7 @@ function Invoke-HyperVCluster6Provision {
     param (
         $EnvironmentName
     )
-    Invoke-ClusterApplicationProvision -ClusterApplicationName HyperVCluster6 -EnvironmentName $EnvironmentName
+    Invoke-ApplicationProvision -ApplicationName HyperVCluster6 -EnvironmentName $EnvironmentName
     $Nodes | Invoke-ClaimMPOI
 }
 
@@ -847,6 +847,6 @@ function Invoke-HyperVCluster5Provision {
     param (
         $EnvironmentName
     )
-    Invoke-ClusterApplicationProvision -ClusterApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
+    Invoke-ApplicationProvision -ApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
     $Nodes | Invoke-ClaimMPOI
 }
