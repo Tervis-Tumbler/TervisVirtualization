@@ -840,6 +840,7 @@ function Invoke-HyperVCluster6Provision {
         $EnvironmentName
     )
     Invoke-ApplicationProvision -ApplicationName HyperVCluster6 -EnvironmentName $EnvironmentName
+    $Nodes | Update-TervisSNMPConfiguration
     $Nodes | Invoke-ClaimMPOI
 }
 
