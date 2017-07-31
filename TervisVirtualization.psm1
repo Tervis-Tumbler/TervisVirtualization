@@ -843,8 +843,6 @@ function Invoke-HyperVCluster6Provision {
     $Nodes = Get-TervisApplicationNode -ApplicationName HyperVCluster6 -EnvironmentName $EnvironmentName
     $Nodes | Update-TervisSNMPConfiguration
     $Nodes | Invoke-ClaimMPOI
-    $Nodes | Restart-Computer
-    $Nodes | Wait-ForNodeRestart
     $Nodes | Add-NodeToTervisCluster -Cluster HyperVCluster6
 }
 
@@ -855,7 +853,5 @@ function Invoke-HyperVCluster5Provision {
     Invoke-ApplicationProvision -ApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
     $Nodes = Get-TervisApplicationNode -ApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
     $Nodes | Invoke-ClaimMPOI
-    $Nodes | Restart-Computer
-    $Nodes | Wait-ForNodeRestart
     $Nodes | Add-NodeToTervisCluster -Cluster HyperVCluster5
 }
