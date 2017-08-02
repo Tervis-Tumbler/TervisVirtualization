@@ -853,5 +853,6 @@ function Invoke-HyperVCluster5Provision {
     Invoke-ApplicationProvision -ApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
     $Nodes = Get-TervisApplicationNode -ApplicationName HyperVCluster5 -EnvironmentName $EnvironmentName
     $Nodes | Invoke-ClaimMPOI
+    $Nodes | New-TervisNicTeam
     $Nodes | Add-NodeToTervisCluster -Cluster HyperVCluster5
 }
