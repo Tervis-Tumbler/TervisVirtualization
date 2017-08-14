@@ -651,11 +651,25 @@ function Restart-TervisVMAndWaitForPort {
 function Find-TervisVM {
     [CmdletBinding()]
     param (
-        [String[]]$Name
+        [String[]]$Name = "*",
+        $ClusterName
     )
     $HyperVHosts = Get-HyperVHosts
 
-    $VM = Start-ParallelWork -Parameters $HyperVHosts -OptionalParameters $Name -ScriptBlock {
+    $HyperVHostsToGetVMsFrom = if ($ClusterName) {
+        $ClusterNodeNames = Get-Cluster -Name $ClusterName |
+        Get-ClusterNode |
+        Select-Object -ExpandProperty Name
+
+        $HyperVHosts | 
+        Where-Object {
+            $_ -in $ClusterNodeNames
+        }
+    } else {
+        $HyperVHosts
+    }
+
+    $VM = Start-ParallelWork -Parameters $HyperVHostsToGetVMsFrom -OptionalParameters $Name -ScriptBlock {
         param($HyperVHost, [String[]]$Name)
         Invoke-Command -ComputerName $HyperVHost -ArgumentList (,$Name) -ScriptBlock { 
             param ([String[]]$Name)
@@ -760,8 +774,6 @@ function Find-TervisVMByMACAddress {
 function Get-HyperVHosts {
     $ComputerswithHyperVServices = Get-ADObject -Filter 'ObjectClass -eq "serviceConnectionPoint" -and Name -eq "Microsoft Hyper-V"' -ErrorAction Stop
     foreach($Computer in $ComputerswithHyperVServices) {            
-#        $ComputerObjectPathArray = $Computer.DistinguishedName.split(",")
-#        $ComputerObjectPath = $ComputerObjectPath[1..$ComputerObjectPathArray.Count] -join "," 
         $ComputerObjectPath = ($Computer.DistinguishedName.split(",") | select -skip 1 ) -join ","
         $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
         if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
