@@ -868,3 +868,23 @@ function Invoke-HyperVCluster5Provision {
     $Nodes | New-TervisNicTeam
     $Nodes | Add-NodeToTervisCluster -Cluster HyperVCluster5
 }
+
+
+function Find-VHDsNotAttachedToVMs {
+    param (
+        $ClusterName
+    )
+    $VMs = Find-TervisVM -ClusterName $ClusterName
+    $VMHardDiskDrives = foreach ($VM in $VMs) {
+        Get-VMHardDiskDrive -ComputerName $VM.ComputerName -VMName $VM.Name
+    }
+
+    $VMHardDiskDrives = Start-ParallelWork -Parameters $VMs -ScriptBlock {
+        param($VM)
+        Get-VMHardDiskDrive -ComputerName $VM.ComputerName -VMName $VM.Name        
+    }
+
+    $VHDs = Get-ChildItem -Recurse -File -Path  "\\$ClusterName\ClusterStorage$" -Include *.avhd,*.vhd,*.vhdx
+
+
+}
