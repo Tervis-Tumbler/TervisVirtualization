@@ -870,9 +870,9 @@ function Invoke-HyperVCluster5Provision {
 }
 
 
-function Find-VHDsNotAttachedToVMs {
+function Invoke-FindVHDsNotAttachedToVMs {
     param (
-        $ClusterName
+        [Parameter(Mandatory)]$ClusterName
     )
     $VMs = Find-TervisVM -ClusterName $ClusterName
     $VMHardDiskDrives = foreach ($VM in $VMs) {
@@ -886,5 +886,9 @@ function Find-VHDsNotAttachedToVMs {
 
     $VHDs = Get-ChildItem -Recurse -File -Path  "\\$ClusterName\ClusterStorage$" -Include *.avhd,*.vhd,*.vhdx
 
+    $PathsToVHDAttachedToVMsRemote = $VMHardDiskDrives.path | ConvertTo-RemotePath -ComputerName $ClusterName
+    $PathToVHDsOnClusterSharedVolumes = $VHDs.fullname | % { $_.replace("ClusterStorage$", "C$\ClusterStorage") }
+    $Results = Compare-Object -ReferenceObject $PathsToVHDAttachedToVMsRemote -DifferenceObject $PathToVHDsOnClusterSharedVolumes
 
+    $Results | fl *
 }
