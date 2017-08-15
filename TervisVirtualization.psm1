@@ -869,6 +869,15 @@ function Invoke-HyperVCluster5Provision {
     $Nodes | Add-NodeToTervisCluster -Cluster HyperVCluster5
 }
 
+function Invoke-VDICluster1Provision {
+    param (
+        $EnvironmentName
+    )
+    Invoke-ApplicationProvision -ApplicationName VDICluster1 -EnvironmentName $EnvironmentName
+    $Nodes = Get-TervisApplicationNode -ApplicationName VDICluster1 -EnvironmentName $EnvironmentName
+    $Nodes | Invoke-ClaimMPOI
+    $Nodes | New-TervisNicTeam
+}
 
 function Invoke-FindVHDsNotAttachedToVMs {
     param (
