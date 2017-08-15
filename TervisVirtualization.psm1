@@ -875,9 +875,6 @@ function Invoke-FindVHDsNotAttachedToVMs {
         [Parameter(Mandatory)]$ClusterName
     )
     $VMs = Find-TervisVM -ClusterName $ClusterName
-    $VMHardDiskDrives = foreach ($VM in $VMs) {
-        Get-VMHardDiskDrive -ComputerName $VM.ComputerName -VMName $VM.Name
-    }
 
     $VMHardDiskDrives = Start-ParallelWork -Parameters $VMs -ScriptBlock {
         param($VM)
