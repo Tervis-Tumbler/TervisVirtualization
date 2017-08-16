@@ -879,6 +879,16 @@ function Invoke-VDICluster1Provision {
     $Nodes | New-TervisNicTeam
 }
 
+function Invoke-StandaloneHyperVServerProvision {
+    param (
+        $EnvironmentName
+    )
+    Invoke-ApplicationProvision -ApplicationName StandaloneHyperVServer -EnvironmentName $EnvironmentName
+    $Nodes = Get-TervisApplicationNode -ApplicationName StandaloneHyperVServer -EnvironmentName $EnvironmentName
+    $Nodes | Invoke-ClaimMPOI
+    $Nodes | New-TervisNicTeam
+}
+
 function Invoke-FindVHDsNotAttachedToVMs {
     param (
         [Parameter(Mandatory)]$ClusterName
