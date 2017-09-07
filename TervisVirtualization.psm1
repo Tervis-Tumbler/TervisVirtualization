@@ -914,7 +914,7 @@ function Get-IrmaReplicationStatus {
 dhcp1
 Disney-Old
 passwordstate
-prd-bartend01
+prd-bartender01
 prd-progis01
 prd-wcsapp01
 p-mesiis
