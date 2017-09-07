@@ -924,6 +924,8 @@ DirSync
 ADFSProxy01
 RMSHQ01
 2016 Template
+RDBroker2012R2
+RD2012R2-Lic
 "@ -split "`r`n"
     $VMs = find-tervisvm -Name $ReplicatedVMNames
     $RunningVMs = $VMS | 
