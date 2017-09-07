@@ -908,3 +908,32 @@ function Invoke-FindVHDsNotAttachedToVMs {
 
     $Results | fl *
 }
+
+function Get-IrmaReplicationStatus {
+    $ReplicatedVMNames = @"
+dhcp1
+Disney-Old
+passwordstate
+prd-bartend01
+prd-progis01
+prd-wcsapp01
+p-mesiis
+customizer
+ADFS02
+DirSync
+ADFSProxy01
+RMSHQ01
+2016 Template
+"@ -split "`r`n"
+    $VMs = find-tervisvm -Name $ReplicatedVMNames
+    $RunningVMs = $VMS | 
+    where state -EQ Running
+    
+    $VMReplication = $RunningVMs|% { Measure-VMReplication -ComputerName $_.computername -VMName $_.Name }
+
+    $VMReplication | % {
+        $_.CurrentTask | 
+        Select Name,PercentComplete |
+        Add-Member -MemberType NoteProperty -Name VMNAme -PassThru -Value $_.VMName
+    } | sort VMName | select -Property VMName, Name, PercentComplete
+}
