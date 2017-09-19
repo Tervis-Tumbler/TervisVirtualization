@@ -28,7 +28,7 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
         [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
@@ -104,7 +104,7 @@ function New-TervisClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016","VyOS")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
@@ -210,7 +210,7 @@ function New-TervisNonClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
@@ -426,6 +426,12 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\2016 Template\Virtual Hard Disks\2016 Template.vhdx"
     Generation=2
     SecureBoot=$true
+},
+[pscustomobject][ordered]@{
+    Name="VyOS"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume11\VyOS Template\Virtual Hard Disks\VyOS Template.vhdx"
+    Generation=2
+    SecureBoot=$False
 }
 
 function Get-VMOperatingSystemTemplate {
@@ -936,6 +942,6 @@ RD2012R2-Lic
     $VMReplication | % {
         $_.CurrentTask | 
         Select Name,PercentComplete |
-        Add-Member -MemberType NoteProperty -Name VMNAme -PassThru -Value $_.VMName
+        Add-Member -MemberType NoteProperty -Name VMName -PassThru -Value $_.VMName
     } | sort VMName | select -Property VMName, Name, PercentComplete
 }
