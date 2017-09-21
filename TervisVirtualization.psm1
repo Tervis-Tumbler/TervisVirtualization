@@ -430,7 +430,7 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 [pscustomobject][ordered]@{
     Name="VyOS"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume11\VyOS Template\Virtual Hard Disks\VyOS Template.vhdx"
-    Generation=2
+    Generation=1
     SecureBoot=$False
 }
 
