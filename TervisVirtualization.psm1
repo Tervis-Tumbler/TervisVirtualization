@@ -355,13 +355,16 @@ function Set-TervisVMNetworkAdapter {
         [switch]$PassThru
     )
     if ($UseVlanTagging) { $VM | Set-VMNetworkAdapterVlan -VlanId $DHCPScope.VLan -Access }
-    $VM | Start-VM -Passthru | Stop-VM -Force -Passthru
+    $VM | Start-VM -Passthru | Stop-VM -Force
     
-    $VMMacAddress = $VM | Get-VMNetworkAdapter | select -ExpandProperty macaddress
+    do {
+        $VMWithMacAddressAssigned = Get-VM -ComputerName $VM.ComputerName -Name $VM.Name    
+        $VMMacAddress = $VMWithMacAddressAssigned | Get-VMNetworkAdapter | select -ExpandProperty macaddress
+    } while ($VMMacAddress -eq "000000000000") 
 
-    $VM | Set-VMNetworkAdapter -StaticMacAddress $VMMacAddress
+    $VMWithMacAddressAssigned | Set-VMNetworkAdapter -StaticMacAddress $VMMacAddress
     
-    if ($PassThru) {$VM}
+    if ($PassThru) {$VMWithMacAddressAssigned}
 }
 
 function Get-TervisVMNetworkAdapter {
