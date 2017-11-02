@@ -824,6 +824,7 @@ function Add-TervisFibreChannelFabrictoVM {
         [String] $Cluster
          
     )
+    Set-VMSecurity -VirtualizationBasedSecurityOptOut $true -ComputerName $Computername -VMName $VMName
     $ClusterFabric = Get-TervisVMFibreChannelFabric -Cluster $Cluster
         Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricA
         Add-VMFibreChannelHba -ComputerName $Computername -VMName $VMName -SanName $ClusterFabric.FabricB
