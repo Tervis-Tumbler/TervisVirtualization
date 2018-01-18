@@ -787,14 +787,26 @@ function Find-TervisVMByMACAddress {
 }
 
 function Get-HyperVHosts {
-    $ComputerswithHyperVServices = Get-ADObject -Filter 'ObjectClass -eq "serviceConnectionPoint" -and Name -eq "Microsoft Hyper-V"' -ErrorAction Stop
-    foreach($Computer in $ComputerswithHyperVServices) {            
-        $ComputerObjectPath = ($Computer.DistinguishedName.split(",") | select -skip 1 ) -join ","
-        $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
-        if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
-            get-adcomputer -Identity $ComputerObjectPath | select -ExpandProperty Name
+    param (
+        [switch]$UseServiceConnectionPoint
+    )
+
+    if ($UseServiceConnectionPoint) {
+        $ComputerswithHyperVServices = Get-ADObject -Filter 'ObjectClass -eq "serviceConnectionPoint" -and Name -eq "Microsoft Hyper-V"' -ErrorAction Stop
+        foreach($Computer in $ComputerswithHyperVServices) {            
+            $ComputerObjectPath = ($Computer.DistinguishedName.split(",") | select -skip 1 ) -join ","
+            $ObjectPathwithMSDPMSuffix = "CN=MSDPM,$ComputerObjectPath"
+            if (-not(Get-ADObject -filter {distinguishedname -eq $ObjectPathwithMSDPMSuffix})){
+                get-adcomputer -Identity $ComputerObjectPath | select -ExpandProperty Name
+            }
         }
-    }
+    } else {        
+        Get-SPN -ServiceClass "Microsoft Virtual Console Service" | 
+            Where-Object ComputerName -NotLike *DPM* |
+            Where-Object ComputerName -NotLike *Mohl* |
+            Select-Object -ExpandProperty ComputerName | 
+            Sort-Object -Unique
+    }    
 }
 
 $TervisVMFibreChannelFabric = [pscustomobject][ordered]@{
