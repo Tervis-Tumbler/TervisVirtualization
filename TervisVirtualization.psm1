@@ -968,3 +968,42 @@ RD2012R2-Lic
         Add-Member -MemberType NoteProperty -Name VMName -PassThru -Value $_.VMName
     } | sort VMName | select -Property VMName, Name, PercentComplete
 }
+
+function Invoke-InstallandConfigureClusterAwareUpdating{
+    param(
+        [parameter(Mandatory)]$Cluster
+    )
+
+    Add-CauClusterRole -ClusterName $Cluster
+        -Force 
+        -CauPluginName Microsoft.WindowsUpdatePlugin 
+        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'False' } 
+        -MaxFailedNodes 1 
+        -MaxRetriesPerNode 3 
+        -RequireAllNodesOnline 
+        -StartDate (Get-Date) 
+        -DaysOfWeek 1 
+        -IntervalWeeks 1 
+        -UseDefault 
+        -EnableFirewallRules
+    Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
+    }
+
+function Set-ClusterAwareUpdatingConfiguration{
+    param(
+        [parameter(mandatory)]$Cluster
+    )
+    Set-CauClusterRole -ClusterName $Cluster
+        -Force 
+        -CauPluginName Microsoft.WindowsUpdatePlugin 
+        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'False' } 
+        -MaxFailedNodes 1 
+        -MaxRetriesPerNode 3 
+        -RequireAllNodesOnline 
+        -StartDate (Get-Date) 
+        -DaysOfWeek 1 
+        -IntervalWeeks 1 
+        -UseDefault 
+        -EnableFirewallRules
+    Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
+    }
