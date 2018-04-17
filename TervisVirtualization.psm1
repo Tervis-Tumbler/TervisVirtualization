@@ -139,7 +139,7 @@ function New-TervisClusterVM {
     )
     $VMSize = Get-TervisVMSize -VMSizeName $VMSizeName
     $VMOperatingSystemTemplate = Get-VMOperatingSystemTemplate -VMOperatingSystemTemplateName $VMOperatingSystemTemplateName
-    $VMName = Get-TervisVMName -VMNameWithoutEnvironmentPrefix $VMNameWithoutEnvironmentPrefix
+    $VMName = Get-TervisVMName -VMNameWithoutEnvironmentPrefix $VMNameWithoutEnvironmentPrefix -EnvironmentName $EnvironmentName
     $CSVToStoreVMOS = Get-TervisClusterSharedVolumeToStoreVMOSOn -Cluster $Cluster
     $ClusterNodeToHostVM = Get-TervisClusterNodeToHostVM -VMSize $VMSize -Cluster $Cluster
     $VMSwitch = Get-TervisVMSwitch -ComputerName $ClusterNodeToHostVM.Name
@@ -455,7 +455,8 @@ function Get-VMOperatingSystemTemplate {
 
 Function Get-TervisVMName {
     param(
-        [Parameter(Mandatory)][ValidateLength(1,11)][String]$VMNameWithoutEnvironmentPrefix
+        [Parameter(Mandatory)][ValidateLength(1,11)][String]$VMNameWithoutEnvironmentPrefix,
+        $EnvironmentName
     )
     $EnvironmentPrefix = get-TervisEnvironmentPrefix -EnvironmentName $EnvironmentName
     $VMName = "$EnvironmentPrefix-$VMNameWithoutEnvironmentPrefix"
