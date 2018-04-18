@@ -977,7 +977,7 @@ function Invoke-InstallandConfigureClusterAwareUpdating{
     Add-CauClusterRole -ClusterName $Cluster
         -Force 
         -CauPluginName Microsoft.WindowsUpdatePlugin 
-        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'False' } 
+        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } 
         -MaxFailedNodes 1 
         -MaxRetriesPerNode 3 
         -RequireAllNodesOnline 
@@ -996,7 +996,7 @@ function Set-ClusterAwareUpdatingConfiguration{
     Set-CauClusterRole -ClusterName $Cluster
         -Force 
         -CauPluginName Microsoft.WindowsUpdatePlugin 
-        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'False' } 
+        -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } 
         -MaxFailedNodes 1 
         -MaxRetriesPerNode 3 
         -RequireAllNodesOnline 
@@ -1007,3 +1007,5 @@ function Set-ClusterAwareUpdatingConfiguration{
         -EnableFirewallRules
     Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
     }
+
+    Invoke-CauRun -
