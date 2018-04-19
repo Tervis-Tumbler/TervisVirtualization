@@ -343,7 +343,7 @@ function Remove-TervisVM {
         if ($VM.FibreChannelHostBusAdapters) {
             $VM | Remove-BrocadeZoning
         }
-
+        $Nodes | Remove-TervisApplicationNodeRDMSession
         Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
             $Using:VM.Name | Remove-VM
         }        
