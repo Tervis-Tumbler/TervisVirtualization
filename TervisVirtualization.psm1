@@ -1010,5 +1010,4 @@ function Set-ClusterAwareUpdatingConfiguration{
         -EnableFirewallRules
     Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
     }
-
-    Invoke-CauRun -
+   
