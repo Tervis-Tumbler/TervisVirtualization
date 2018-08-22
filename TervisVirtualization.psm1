@@ -830,7 +830,7 @@ function Get-TervisVMFibreChannelFabric {
         [ValidateSet(“HypervCluster5","HypervCluster6")]
         $Cluster
     )
-        $TervisVMFibreChannelFabric | Where Cluster -eq $Cluster
+    $TervisVMFibreChannelFabric | Where Cluster -eq $Cluster
 }
 
 function Add-TervisFibreChannelFabrictoVM {
@@ -990,7 +990,7 @@ function Invoke-InstallandConfigureClusterAwareUpdating{
         -UseDefault `
         -EnableFirewallRules
     Enable-CauClusterRole -ClusterName $Cluster -Force
-    }
+}
 
 function Set-ClusterAwareUpdatingConfiguration{
     param(
@@ -998,4 +998,3 @@ function Set-ClusterAwareUpdatingConfiguration{
     )
     Set-CauClusterRole -ClusterName $Cluster -Force -CauPluginName Microsoft.WindowsUpdatePlugin -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } -MaxFailedNodes 1 -MaxRetriesPerNode 3 -RequireAllNodesOnline -StartDate (Get-Date) -DaysOfWeek 1 -IntervalWeeks 1 -UseDefault -EnableFirewallRules -NodeOrder "inf-hypervc5n02","inf-hypervc5n06","inf-hypervc5n01","inf-hypervc5n03","inf-hypervc5n04","inf-hypervc5n05"
     Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
-    }
