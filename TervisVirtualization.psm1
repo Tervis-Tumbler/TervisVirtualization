@@ -998,3 +998,32 @@ function Set-ClusterAwareUpdatingConfiguration{
     )
     Set-CauClusterRole -ClusterName $Cluster -Force -CauPluginName Microsoft.WindowsUpdatePlugin -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } -MaxFailedNodes 1 -MaxRetriesPerNode 3 -RequireAllNodesOnline -StartDate (Get-Date) -DaysOfWeek 1 -IntervalWeeks 1 -UseDefault -EnableFirewallRules -NodeOrder "inf-hypervc5n02","inf-hypervc5n06","inf-hypervc5n01","inf-hypervc5n03","inf-hypervc5n04","inf-hypervc5n05"
     Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
+}
+
+function Set-ClusterResourceSeparateMonitorForVM {
+    param(
+        [parameter(mandatory,ValueFromPipelineByPropertyName)]$VMName,
+        
+        [parameter(mandatory,ValueFromPipelineByPropertyName)]$ClusterName,
+        
+        [parameter(mandatory,ParameterSetName="Enable")]
+        [switch]$Enable,
+        
+        [parameter(mandatory,ParameterSetName="Disable")]
+        [switch]$Disable,
+        
+        [switch]$ForceLiveMigration
+        
+    )
+    process{
+        if($Enable){
+            (Get-ClusterResource -Cluster $ClusterName -Name “Virtual Machine $VMName").SeparateMonitor = 1
+        }
+        elseif($Disable){
+            (Get-ClusterResource -Cluster $ClusterName -Name “Virtual Machine $VMName").SeparateMonitor = 0
+        }
+        if ($ForceLiveMigration){
+            Move-ClusterVirtualMachineRole -MigrationType Live -Cluster $ClusterName -Name $VMName
+        }
+    }
+}
