@@ -1027,3 +1027,14 @@ function Set-ClusterResourceSeparateMonitorForVM {
         }
     }
 }
+
+function Set-NestedVirtualizationConfigurationForVM{
+    param(
+        [parameter(Mandatory,ValueFromPipelineByPropertyName)]$VMName,
+        [parameter(Mandatory,ValueFromPipelineByPropertyName)]$Computername
+    )
+    process{
+        Set-VMProcessor -ComputerName $Computername -VMName $VMName -ExposeVirtualizationExtensions $true
+        Get-VMNetworkAdapter -ComputerName $Computername -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
+    }
+}
