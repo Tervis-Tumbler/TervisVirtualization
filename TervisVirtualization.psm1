@@ -434,6 +434,12 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     SecureBoot=$true
 },
 [pscustomobject][ordered]@{
+    Name="Windows Server Datacenter"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\Windows Server Datacenter Template\Windows Server Datacenter.vhdx"
+    Generation=2
+    SecureBoot=$true
+},
+[pscustomobject][ordered]@{
     Name="VyOS"
     VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume11\VyOS Template\Virtual Hard Disks\VyOS Template.vhdx"
     Generation=1
