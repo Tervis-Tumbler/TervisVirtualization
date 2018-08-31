@@ -28,7 +28,7 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
         [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux")]
+        [ValidateSet("Windows Server 2012 R2","Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
@@ -104,7 +104,7 @@ function New-TervisClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016","VyOS","Arch Linux")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
@@ -210,7 +210,7 @@ function New-TervisNonClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
