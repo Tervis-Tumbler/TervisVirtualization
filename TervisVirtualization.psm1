@@ -1044,3 +1044,7 @@ function Set-NestedVirtualizationConfigurationForVM{
         Get-VMNetworkAdapter -ComputerName $Computername -VMName $VMName | Set-VMNetworkAdapter -MacAddressSpoofing On
     }
 }
+
+function Invoke-WindowsServerTemplateCustomization {
+    Get-NetFirewallRule -name WINRM-HTTP-In-TCP-Public | Set-NetFirewallRule -RemoteAddress Any
+}
