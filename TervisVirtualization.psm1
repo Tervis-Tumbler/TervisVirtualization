@@ -429,7 +429,7 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2016"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\2016 Template\Virtual Hard Disks\2016 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\2016 Template-2\2016 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
