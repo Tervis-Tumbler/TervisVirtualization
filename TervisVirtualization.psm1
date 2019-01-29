@@ -28,7 +28,7 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
         [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
-        [ValidateSet("Windows Server 2012 R2","Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter","Windows Server 2019")]
+        [ValidateSet("Windows Server 2012 R2","Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter","Windows Server 2019","Debian 9")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
@@ -104,7 +104,7 @@ function New-TervisClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter","Windows Server 2019")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter","Windows Server 2019","Debian 9")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
@@ -210,7 +210,7 @@ function New-TervisNonClusterVM {
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NoVHD")]
         [Parameter(Mandatory, ParameterSetName = "EmptyVHD")]
-        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter")]
+        [ValidateSet(“Windows Server 2012 R2”,"Windows Server 2012","Windows Server 2008 R2", "PerfSonar", "CentOS 7","Windows 10","Windows Server 2016","VyOS","Arch Linux","Windows Server Datacenter","Debian 9")]
         [String]$VMOperatingSystemTemplateName,
 
         [Parameter(Mandatory, ParameterSetName = "TemplatedVHD")]
@@ -459,11 +459,16 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server Core 2019"
-    VHDFile=[System.IO.FileInfo]"c:\ClusterStorage\Volume16\Windows Server 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\Windows Server 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
+},
+[pscustomobject][ordered]@{
+    Name="Debian 9"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\Debian 9 Template\Debian9Template.vhdx"
+    Generation=2
+    SecureBoot=$false
 }
-
 
 function Get-VMOperatingSystemTemplate {
     param(
@@ -846,7 +851,7 @@ $TervisVMFibreChannelFabric = [pscustomobject][ordered]@{
 function Get-TervisVMFibreChannelFabric {
     param ( 
         [Parameter(Mandatory)]
-        [ValidateSet(“HypervCluster5","HypervCluster6")]
+        [ValidateSet("HypervCluster5","HypervCluster6")]
         $Cluster
     )
     $TervisVMFibreChannelFabric | Where Cluster -eq $Cluster
