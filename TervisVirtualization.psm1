@@ -1,7 +1,4 @@
-﻿#Requires -Modules TervisEnvironment, TervisDHCP, TervisCluster, @{ModuleName="hyper-V";ModuleVersion=1.1}, StringPowerShell, TervisNetTCPIP, Get-SPN
-#Requires -Version 5
-
-function New-TervisVM {
+﻿function New-TervisVM {
     param(
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredTemplatedVHD")]
