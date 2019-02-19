@@ -1107,3 +1107,4 @@ function Invoke-GenerateNewStaticMacForVM {
     Add-DhcpServerv4Reservation -ScopeId $DHCPScope -ComputerName $DHCPServerName -ClientId $NewMACAddress -IPAddress $DHCPLease.IPAddress -Name $DHCPLease.HostName
     
     $VM | Start-VM
+}
