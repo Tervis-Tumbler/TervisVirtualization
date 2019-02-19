@@ -1063,3 +1063,47 @@ function Set-NestedVirtualizationConfigurationForVM{
 function Invoke-WindowsServerTemplateCustomization {
     Get-NetFirewallRule -name WINRM-HTTP-In-TCP-Public | Set-NetFirewallRule -RemoteAddress Any
 }
+
+function Invoke-GenerateNewStaticMacForVM {
+    param(
+        [parameter(Mandatory)]$Name
+    )
+   
+    $VM = Find-TervisVM -Name $Name | Get-TervisVM
+    $VMMacAddress = $VM | Get-VMNetworkAdapter | select -ExpandProperty macaddress
+    $VMMacaddressWithDashes = ($VMMacAddress -replace '(..)','$1-').Trim('-')
+    $DHCPLease = Get-DHCPLease -MACAddress $VMMacaddressWithDashes
+    $DHCPScope = $DHCPLease.ScopeId | select IPAddressToString -ExpandProperty IPAddressToString
+    
+    Invoke-Command -ComputerName $VM.ComputerName -ScriptBlock {
+######https://blogs.msdn.microsoft.com/taylorb/2013/08/12/changing-the-mac-address-of-nic-using-the-hyper-v-wmi-v2-namespace/######
+        $VMName = $using:Name 
+         #Retrieve the Hyper-V Management Service, ComputerSystem class for the VM and the VM’s SettingData class. 
+        $Msvm_VirtualSystemManagementService = Get-WmiObject -Namespace root\virtualization\v2 `
+              -Class Msvm_VirtualSystemManagementService 
+        
+        $Msvm_ComputerSystem = Get-WmiObject -Namespace root\virtualization\v2 `
+              -Class Msvm_ComputerSystem -Filter "ElementName='$vmName'" 
+        
+        $Msvm_VirtualSystemSettingData = ($Msvm_ComputerSystem.GetRelated("Msvm_VirtualSystemSettingData", "Msvm_SettingsDefineState", $null, $null, "SettingData", "ManagedElement", $false, $null) | % {$_}) 
+        
+        
+        #Retrieve the NetworkAdapterPortSettings Associated to the VM. 
+        $Msvm_SyntheticEthernetPortSettingData = ($Msvm_VirtualSystemSettingData.GetRelated("Msvm_SyntheticEthernetPortSettingData") | Where-Object {$_.ElementName -eq "Network Adapter"}) 
+        
+        #Set the Static Mac Address To False and the Address to an Empty String
+        $Msvm_SyntheticEthernetPortSettingData.StaticMacAddress = $false
+        $Msvm_SyntheticEthernetPortSettingData.Address = ""
+        
+        $Msvm_VirtualSystemManagementService.ModifyResourceSettings($Msvm_SyntheticEthernetPortSettingData.GetText(2))
+    }
+    
+    $VM | Start-VM -Passthru | Stop-VM -Force
+    $NewMACAddress = $VM | Get-VMNetworkAdapter | select MacAddress -ExpandProperty MacAddress
+    $VM | Set-VMNetworkAdapter -StaticMacAddress $NewMACAddress
+    $DHCPServerName = Get-DhcpServerInDC | select -First 1 -ExpandProperty DNSName
+    Remove-DhcpServerv4Reservation -ScopeId $DHCPScope -ClientId $VMMacAddress -ComputerName $DHCPServerName
+    Add-DhcpServerv4Reservation -ScopeId $DHCPScope -ComputerName $DHCPServerName -ClientId $NewMACAddress -IPAddress $DHCPLease.IPAddress -Name $DHCPLease.HostName
+    Add-DhcpServerv4Reservation -ScopeId $DHCPScope -ComputerName $DHCPServerName -ClientId $NewMACAddress -IPAddress $DHCPLease.IPAddress -Name $DHCPLease.HostName
+    
+    $VM | Start-VM
