@@ -1108,3 +1108,14 @@ function Invoke-GenerateNewStaticMacForVM {
     
     $VM | Start-VM
 }
+
+function New-TervisHyperVVSAN {
+    param(
+        [parameter(Mandatory,ValueFromPipelineByPropertyName)]$Computername
+    )
+    $FCInitiators = Invoke-Command -ComputerName $Computername -ScriptBlock {
+        Get-InitiatorPort | Where-Object ConnectionType -eq "Fibre Channel"
+    }
+    New-VMSan -ComputerName $Computername -Name FabricA -WorldWidePortName $FCInitiators.PortAddress[0] -WorldWideNodeName $FCInitiators.NodeAddress[0]
+    New-VMSan -ComputerName $Computername -Name FabricB -WorldWidePortName $FCInitiators.PortAddress[1] -WorldWideNodeName $FCInitiators.NodeAddress[1]
+}
