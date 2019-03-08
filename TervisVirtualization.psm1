@@ -829,6 +829,7 @@ function Get-HyperVHosts {
         Get-SPN -ServiceClass "Microsoft Virtual Console Service" | 
             Where-Object ComputerName -NotLike *DPM* |
             Where-Object ComputerName -NotLike *Mohl* |
+            Where-Object ComputerName -NE "INF-AzureBK01" |
             Select-Object -ExpandProperty ComputerName | 
             Sort-Object -Unique
     }    
