@@ -1,4 +1,4 @@
-﻿function New-TervisVM {
+function New-TervisVM {
     param(
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredTemplatedVHD")]
@@ -432,7 +432,7 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server Datacenter"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\Windows Server Datacenter Template\Windows Server Datacenter.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume9\Windows Server Datacenter Template\Windows Server Datacenter.vhdx"
     Generation=2
     SecureBoot=$true
 },
@@ -456,7 +456,7 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server Core 2019"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\Windows Server 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume9\Windows Server 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
