@@ -1003,13 +1003,11 @@ function Invoke-InstallandConfigureClusterAwareUpdating{
         -Force `
         -CauPluginName Microsoft.WindowsUpdatePlugin `
         -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } `
-        -MaxFailedNodes 1 `
         -MaxRetriesPerNode 3 `
         -RequireAllNodesOnline `
-        -StartDate "4/24/2018 9:00:00 AM" `
+        -StartDate (Get-Date) `
         -DaysOfWeek 1 `
         -IntervalWeeks 1 `
-        -UseDefault `
         -EnableFirewallRules
     Enable-CauClusterRole -ClusterName $Cluster -Force
 }
@@ -1018,8 +1016,8 @@ function Set-ClusterAwareUpdatingConfiguration{
     param(
         [parameter(mandatory)]$Cluster
     )
-    Set-CauClusterRole -ClusterName $Cluster -Force -CauPluginName Microsoft.WindowsUpdatePlugin -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } -MaxFailedNodes 1 -MaxRetriesPerNode 3 -RequireAllNodesOnline -StartDate (Get-Date) -DaysOfWeek 1 -IntervalWeeks 1 -UseDefault -EnableFirewallRules -NodeOrder "inf-hypervc5n02","inf-hypervc5n06","inf-hypervc5n01","inf-hypervc5n03","inf-hypervc5n04","inf-hypervc5n05"
-    Enable-CauClusterRole -ClusterName HyperVCluster6 -Force;
+    Set-CauClusterRole -ClusterName $Cluster -Force -CauPluginName Microsoft.WindowsUpdatePlugin -CauPluginArguments @{ 'IncludeRecommendedUpdates' = 'True' } -MaxFailedNodes 1 -MaxRetriesPerNode 3 -RequireAllNodesOnline -StartDate (Get-Date) -DaysOfWeek 1 -IntervalWeeks 1 -UseDefault -EnableFirewallRules
+    Enable-CauClusterRole -ClusterName $Cluster -Force;
 }
 
 function Set-ClusterResourceSeparateMonitorForVM {
