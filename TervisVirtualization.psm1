@@ -450,13 +450,13 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2019"
-    VHDFile=[System.IO.FileInfo]"c:\ClusterStorage\Volume16\Windows Server 2019 Template\Virtual Hard Disks\Windows Server 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"c:\ClusterStorage\Volume9\Windows Server 2019 Template\Virtual Hard Disks\Windows Server 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
 [pscustomobject][ordered]@{
     Name="Windows Server Core 2019"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume9\Windows Server 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume9\Windows Server Core 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
