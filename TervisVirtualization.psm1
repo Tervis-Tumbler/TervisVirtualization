@@ -1,4 +1,4 @@
-function New-TervisVM {
+﻿function New-TervisVM {
     param(
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredTemplatedVHD")]
@@ -16,7 +16,7 @@ function New-TervisVM {
         [Parameter(Mandatory, ParameterSetName = "NonClusteredNoVHD")]
         [Parameter(Mandatory, ParameterSetName = "ClusteredEmptyVHD")]
         [Parameter(Mandatory, ParameterSetName = "NonClusteredEmptyVHD")]
-        [ValidateSet(“Small”,”Medium”,"Large")]
+        [ValidateSet("Small","Medium","Large")]
         [String]$VMSizeName,
 
         [Parameter(Mandatory, ParameterSetName = "ClusteredTemplatedVHD")]
