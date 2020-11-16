@@ -392,13 +392,13 @@ function Get-TervisVMSwitch {
 
 $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
     Name="Windows Server 2012 R2"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume16\2012 R2 Template\2012R2Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume10\2012 R2 Template\2012R2Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2012"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume8\2012 Template\2012 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume3\2012 Template\2012 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
@@ -427,7 +427,7 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2016"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume16\2016 Template-2\2016 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\volume3\2016 Template-2\2016 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
@@ -451,13 +451,13 @@ $VMOperatingSystemTemplates = [pscustomobject][ordered]@{
 },
 [pscustomobject][ordered]@{
     Name="Windows Server 2019"
-    VHDFile=[System.IO.FileInfo]"c:\ClusterStorage\Volume9\Windows Server 2019 Template\Virtual Hard Disks\Windows Server 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"c:\ClusterStorage\Volume3\Windows Server 2019 Template\Virtual Hard Disks\Windows Server 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
 [pscustomobject][ordered]@{
     Name="Windows Server Core 2019"
-    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume9\Windows Server Core 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
+    VHDFile=[System.IO.FileInfo]"C:\ClusterStorage\Volume3\Windows Server Core 2019 Template\Virtual Hard Disks\Windows Server Core 2019 Template.vhdx"
     Generation=2
     SecureBoot=$true
 },
