@@ -165,11 +165,12 @@ function New-TervisClusterVM {
                 $CSVToStoreVMOS,
                 $VMName
             )
-            New-Item -ItemType Directory "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\Virtual Hard Disks"
-            Copy-Item -Path $($VMOperatingSystemTemplate.VHDFile.FullName) -Destination "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\Virtual Hard Disks"
-        } -ArgumentList $VMOperatingSystemTemplate, $CSVToStoreVMOS, $VMName
+            $VMVHDPath = "$CSVToStoreVMOS\$VMName\Virtual Hard Disks"
+            New-Item -ItemType Directory $VMVHDPath
+            Copy-Item -Path $($VMOperatingSystemTemplate.VHDFile.FullName) -Destination $VMVHDPath
+        } -ArgumentList $VMOperatingSystemTemplate, $CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName, $VMName
 
-        $PathOfVMVHDx = "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\$($VMOperatingSystemTemplate.VHDFile.Name)"
+        $PathOfVMVHDx = "$($CSVToStoreVMOS.SharedVolumeInfo.FriendlyVolumeName)\$VMName\Virtual Hard Disks\$($VMOperatingSystemTemplate.VHDFile.Name)"
 
         Write-Verbose $PathOfVMVHDx
     
